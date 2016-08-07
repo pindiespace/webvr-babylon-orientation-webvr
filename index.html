@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+    <title>Babylon.js sample code</title>
+    <script src="./babylon.max.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+        crossorigin="anonymous">
+    <style>
+        html,
+        body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1000;
+        }
+        
+        /*#dupCanvas {
+            width: 50%;
+            height: 100%;
+            touch-action: none;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            z-index: -1000;
+        }*/
+        
+        #fullscreen {
+            position: absolute;
+            bottom: 10px;
+            left: 49%;
+        }
+        
+        #fpsLabel {
+            position: absolute;
+            right: 10px;
+            top: 70px;
+            cursor: default;
+        }
+    </style>
+</head>
+
+<body>
+    <span class="label" id="fpsLabel">60 fps</span>
+    <p>
+        <button type="button" id="toggleVr" class="btn btn-default btn-lg">Toggle WebVR</button>
+        <button type="button" id="distortion" class="btn btn-default btn-lg">Toggle Distortion</button>
+    </p>
+    <button class="btn btn-default btn-lg" id="fullscreen">FS</button>
+    <canvas id="renderCanvas"></canvas>
+    <canvas id="dupCanvas"></canvas>
+    <script src="main.js"></script>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
+        var fs = document.getElementById("fullscreen");
+        var fpsLabel = document.getElementById("fpsLabel");
+        var engine = new BABYLON.Engine(canvas, true);
+        
+        var vrToggle = document.getElementById("toggleVr");
+        var distortion = document.getElementById("distortion");
+        var vr = false;
+        var dist = true;
+        var lowres = document.getElementById("lowres");
+        var highres = document.getElementById("highres");
+        var dupCanvas = document.getElementById("dupCanvas");
+        
+        var scene = createScene();
+        setCamera(vr, dist);
+
+        engine.runRenderLoop(function () {
+            scene.render();            
+            
+            fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";   
+            
+            /*var height = canvas.height;
+            var width = canvas.width;
+            dupCanvas.width = width;
+            dupCanvas.height = height;
+            
+            var context = dupCanvas.getContext('2d');
+            
+            context.drawImage(canvas, 0, 0);  */    
+                  
+                     
+        });
+
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+        
+        fs.addEventListener("click", function() {
+            if(vr==true) {
+                scene.activeCamera.requestVRFullscreen(false);
+            } else {
+                engine.switchFullscreen(false);
+            }
+        });
+        
+        /*lowres.addEventListener("click", function() {
+            setRatio(2);
+        });
+        
+        highres.addEventListener("click", function() {
+            setRatio(0.5);
+        }); */ 
+        
+        vrToggle.addEventListener("click", function() {
+            vr = !vr;
+            setCamera(vr, dist);
+        });     
+        distortion.addEventListener("click", function() {
+            dist = !dist;
+            setCamera(vr, dist);
+        });         
+        
+    </script>
+</body>
+
+</html>
