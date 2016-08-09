@@ -27,6 +27,10 @@ var createScene = function () {
     new BABYLON.WebVRFreeCamera("VR-With-Dist", new BABYLON.Vector3(0, 0, 0), scene, true);
     new BABYLON.WebVRFreeCamera("VR-No-Dist", new BABYLON.Vector3(0, 0, 0), scene, false);
 
+
+    // TODO: add pageup and pagedown motion
+    // http://www.babylonjs-playground.com/#1EVRXC
+
     // Light the scene.
     var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
     light.groundColor = new BABYLON.Color3(.5, .5, .5);
