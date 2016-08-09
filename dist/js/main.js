@@ -39,6 +39,9 @@ var createScene = function () {
     var skybox = BABYLON.Mesh.CreateBox("skybox", 200.0, scene);
     var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
     skyboxMaterial.backFaceCulling = false;
+
+    // Cube texture ripped of from David Rousset example
+    // https://www.davrous.com/2014/02/19/coding4fun-tutorial-creating-a-3d-webgl-procedural-qrcode-maze-with-babylon-js/
     skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("./textures/skybox", scene);
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
     skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
