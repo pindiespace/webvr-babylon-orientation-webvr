@@ -6,47 +6,49 @@
  * 
  * NOTE: this assumes the 'canvas' variable was created in index.html
  */
+var createScene = function ( engine, canvas ) {
 
-var createScene = function () {
+    var scene = new BABYLON.Scene( engine );
 
-    var scene = new BABYLON.Scene(engine);
-
-    scene.clearColor = new BABYLON.Color3(0, 0, 0);
+    scene.clearColor = new BABYLON.Color3( 0, 0, 0 );
 
     //scene.debugLayer.show();
     //new BABYLON.VRDeviceOrientationFreeCamera("VR-With-Dist", new BABYLON.Vector3(0, 0, 0), scene, true);
     //new BABYLON.VRDeviceOrientationFreeCamera("VR-No-Dist", new BABYLON.Vector3(0, 0, 0), scene, false);
 
     // FPS camera for non-VR experiences
-
+    new BABYLON.ArcRotateCamera( "ArcRotate", -1.5, 1.4, 20, new BABYLON.Vector3( 0, -2, 3 ), scene );
 
     // Use the Device Orientation Camera - http://doc.babylonjs.com/classes/2.4/DeviceOrientationCamera
-    new BABYLON.DeviceOrientationCamera("Orientation", new BABYLON.Vector3(0, 0, 0), scene);
+    // NOTE: we alter the position of the camera here to match the WebVR cameras, so approx the same scene is shown
+    //new BABYLON.DeviceOrientationCamera("Orientation", new BABYLON.Vector3(0, 20, 0), scene);
 
     // WebVR Free Camera - http://doc.babylonjs.com/classes/2.4/WebVRFreeCamera
-    new BABYLON.WebVRFreeCamera("VR-With-Dist", new BABYLON.Vector3(0, 0, 0), scene, true);
-    new BABYLON.WebVRFreeCamera("VR-No-Dist", new BABYLON.Vector3(0, 0, 0), scene, false);
+    new BABYLON.WebVRFreeCamera("VR-With-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, true);
+
+    new BABYLON.WebVRFreeCamera("VR-No-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, false);
 
 
     // TODO: add pageup and pagedown motion
     // http://www.babylonjs-playground.com/#1EVRXC
 
     // Light the scene.
-    var light = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
-    light.groundColor = new BABYLON.Color3(.5, .5, .5);
+    var light = new BABYLON.HemisphericLight( "hemi", new BABYLON.Vector3( 0, 1, 0 ), scene );
+    light.groundColor = new BABYLON.Color3( .5, .5, .5 );
 
     // Create the skybox.
-    var skybox = BABYLON.Mesh.CreateBox("skybox", 200.0, scene);
-    var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", scene);
+    var skybox = BABYLON.Mesh.CreateBox( "skybox", 200.0, scene );
+    var skyboxMaterial = new BABYLON.StandardMaterial( "skyBox", scene );
     skyboxMaterial.backFaceCulling = false;
 
     // Cube texture ripped of from David Rousset example
     // https://www.davrous.com/2014/02/19/coding4fun-tutorial-creating-a-3d-webgl-procedural-qrcode-maze-with-babylon-js/
-    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("./textures/skybox", scene);
+    skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture( "./textures/skybox", scene, ['_px.png', '_py.png', '_pz.png', '_nx.png', '_ny.png', '_nz.png'] );
     skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-    skyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-    skyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+    skyboxMaterial.diffuseColor = new BABYLON.Color3( 0, 0, 0 );
+    skyboxMaterial.specularColor = new BABYLON.Color3( 0, 0, 0 );
     skybox.material = skyboxMaterial;
+
 
     /////////////////////////
     // Create scene box.
@@ -54,8 +56,8 @@ var createScene = function () {
 
  
     // Procedural textures, https://github.com/BabylonJS/Babylon.js/tree/master/proceduralTexturesLibrary
-    var marbleMaterial = new BABYLON.StandardMaterial("box", scene);
-    var marbleTexture = new BABYLON.MarbleProceduralTexture("marble", 512, scene);
+    var marbleMaterial = new BABYLON.StandardMaterial( "box", scene );
+    var marbleTexture = new BABYLON.MarbleProceduralTexture( "marble", 512, scene );
     marbleTexture.numberOfTilesHeight = 2;
     marbleTexture.numberOfTilesWidth = 2;
     marbleMaterial.ambientTexture = marbleTexture;
@@ -66,9 +68,9 @@ var createScene = function () {
 
     /////////////////////////
     // Create scene sphere.
-    var sphere = BABYLON.Mesh.CreateSphere("sphere", 10.0, 10.0, scene);
-    var brickMaterial = new BABYLON.StandardMaterial("brick", scene);
-    var brickTexture = new BABYLON.BrickProceduralTexture("brick", 512, scene);
+    var sphere = BABYLON.Mesh.CreateSphere( "sphere", 10.0, 10.0, scene );
+    var brickMaterial = new BABYLON.StandardMaterial( "brick", scene );
+    var brickTexture = new BABYLON.BrickProceduralTexture( "brick", 512, scene );
     brickTexture.numberOfTilesHeight = 2;
     brickTexture.numberOfTilesWidth = 2;
     brickMaterial.ambientTexture = brickTexture;
@@ -79,9 +81,9 @@ var createScene = function () {
 
     /////////////////////////
     // Create scene plane
-    var plan = BABYLON.Mesh.CreatePlane("plane", 10.0, scene);
-    var grassMaterial = new BABYLON.StandardMaterial("grass", scene);
-    var grassTexture = new BABYLON.GrassProceduralTexture("grass", 512, scene);
+    var plan = BABYLON.Mesh.CreatePlane( "plane", 10.0, scene );
+    var grassMaterial = new BABYLON.StandardMaterial( "grass", scene );
+    var grassTexture = new BABYLON.GrassProceduralTexture( "grass", 512, scene );
     grassMaterial.backFaceCulling = false;
     grassTexture.numberOfTilesHeight = 2;
     grassTexture.numberOfTilesWidth = 2;
@@ -95,38 +97,38 @@ var createScene = function () {
     // http://doc.babylonjs.com/tutorials/Animations
     // NOTE: Making lighting work on both sides is complex, check
     // http://www.babylonjs-playground.com/#K6SNA#13
-    var animationPlan = new BABYLON.Animation("planeAnimation", "rotation.x", 20, 
-        BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    var animationPlan = new BABYLON.Animation( "planeAnimation", "rotation.x", 20, 
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE );
 
     // An array with all animation keys
     var pkeys = []; 
 
     //At the animation key 0, the value of rotation is "1"
-    pkeys.push({
+    pkeys.push( {
         frame: 0,
         value: 0
-    });
+    } );
 
     //At the animation key 80, the value of rotation is "0.2"
-    pkeys.push({
+    pkeys.push( {
         frame: 150,
         value: Math.PI/6
-    });
+    } );
 
-    pkeys.push({
+    pkeys.push( {
         frame:300,
         value: 0
-    })
+    } );
 
-    animationPlan.setKeys(pkeys);
-    plan.animations.push(animationPlan);
-    scene.beginAnimation(plan, 0, 300, true);
+    animationPlan.setKeys( pkeys );
+    plan.animations.push( animationPlan );
+    scene.beginAnimation( plan, 0, 300, true );
 
     /////////////////////////
     // Create cylinder.
-    var cylinder = BABYLON.Mesh.CreateCylinder("cylinder", 3, 3, 3, 6, 1, scene, false);
-    var roadMaterial = new BABYLON.StandardMaterial("road", scene);
-    var roadTexture = new BABYLON.RoadProceduralTexture("road", 512, scene);
+    var cylinder = BABYLON.Mesh.CreateCylinder( "cylinder", 3, 3, 3, 6, 1, scene, false );
+    var roadMaterial = new BABYLON.StandardMaterial( "road", scene );
+    var roadTexture = new BABYLON.RoadProceduralTexture( "road", 512, scene );
     roadTexture.numberOfTilesHeight = 2;
     roadTexture.numberOfTilesWidth = 2;
     roadMaterial.ambientTexture = roadTexture;
@@ -136,9 +138,9 @@ var createScene = function () {
 
     /////////////////////////
     // Create torus.
-    var torus = BABYLON.Mesh.CreateTorus("torus", 5, 1, 10, scene, false);
-    var woodMaterial = new BABYLON.StandardMaterial("wood", scene);
-    var woodTexture = new BABYLON.WoodProceduralTexture("wood", 512, scene);
+    var torus = BABYLON.Mesh.CreateTorus( "torus", 5, 1, 10, scene, false );
+    var woodMaterial = new BABYLON.StandardMaterial( "wood", scene );
+    var woodTexture = new BABYLON.WoodProceduralTexture( "wood", 512, scene );
     woodTexture.numberOfTilesHeight = 2;
     woodTexture.numberOfTilesWidth = 2;
     woodMaterial.ambientTexture = woodTexture;
@@ -146,54 +148,77 @@ var createScene = function () {
 
     torus.material = woodMaterial;
 
-
     /////////////////////////
-    // Animate the plane
+    // Animate the plane to rock back and forth
     // http://doc.babylonjs.com/tutorials/Animations
-    var animationTorus = new BABYLON.Animation("torusAnimation", "rotation.y", 20, 
-        BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+    var animationTorus = new BABYLON.Animation( "torusAnimation", "rotation.y", 20, 
+        BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE );
 
     // An array with all animation keys
     var tkeys = []; 
 
     //At the animation key 0, the value of rotation is "1"
-    tkeys.push({
+    tkeys.push( {
         frame: 0,
         value: 0
-    });
+    } );
 
     //At the animation key 80, the value of rotation is "0.2"
-    tkeys.push({
+    tkeys.push( {
         frame: 200,
         value: 2 * Math.PI
-    });
+    } );
 
-    animationTorus.setKeys(tkeys);
-    torus.animations.push(animationTorus);
-    scene.beginAnimation(torus, 0, 200, true);
-
+    animationTorus.setKeys( tkeys );
+    torus.animations.push( animationTorus );
+    scene.beginAnimation( torus, 0, 200, true );
 
     // Position the objects.
-    box.position = new BABYLON.Vector3(-10, 0, 0);
-    sphere.position = new BABYLON.Vector3(0, 10, 0);
+    box.position = new BABYLON.Vector3( -10, 0, 0 );
+
+    // Position the box.
+    sphere.position = new BABYLON.Vector3( 0, 10, 0 );
+
+    // Position the rocking plane.
     plan.position.z = 10;
-    plan.rotation = new BABYLON.Vector3(Math.PI/3, Math.PI/5, 0);
+    plan.rotation = new BABYLON.Vector3( Math.PI/3, Math.PI/5, 0 );
+
+    // Position the Cylinder.
     cylinder.position.z = -10;
+    cylinder.position.y = -3;
+
+    // Position the Torus.
     torus.position.x = 10;
 
-
     return scene;
-}
+};
 
-var setCamera = function (vr, distortion) {
+/** 
+ * Assign the active camera
+ */
+var setCamera = function ( vr, distortion ) {
+
     scene.activeCamera && scene.activeCamera.detachControl(canvas);
-    var cameraId = vr ? (distortion ? "VR-With-Dist" : "VR-No-Dist") : "Orientation";
-    scene.setActiveCameraByID(cameraId);
-    scene.activeCamera.attachControl(canvas);
-}
+    ///////////////var cameraId = vr ? (distortion ? "VR-With-Dist" : "VR-No-Dist") : "Orientation";
+    var cameraId = vr ? (distortion ? "VR-With-Dist" : "VR-No-Dist") : "ArcRotate";
 
-var setRatio = function (factor) {
+    scene.setActiveCameraByID(cameraId);
+
+    scene.activeCamera.attachControl(canvas);
+
+};
+
+/** 
+ * Set scaling low res vs. high-res
+ */
+var setRatio = function ( factor ) {
+
     engine._hardwareScalingLevel *= factor;
+
     engine._hardwareScalingLevel = Math.max(engine._hardwareScalingLevel, 1 / window.devicePixelRatio);
+
     engine.resize();
-}
+
+};
+
+

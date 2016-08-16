@@ -16,6 +16,9 @@
     <script src="js/babylon.grassProceduralTexture.min.js"></script>
     <script src="js/babylon.woodProceduralTexture.min.js"></script>
 
+    <!--load our helper ui library-->
+    <script src="js/webvr-dom-ui.js"></script>
+
     <!--load Bootstrap styles-->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
         crossorigin="anonymous">
@@ -32,74 +35,81 @@
         @link https://blog.raananweber.com
     -->
 
-
+    <!--ui showing framerate as fps-->
     <span class="label" id="fpsLabel">60 fps</span>
 
+    <!--ui buttons-->
     <p>
         <button type="button" id="toggleVr" class="btn btn-default btn-lg">Toggle WebVR</button>
-
         <button type="button" id="distortion" class="btn btn-default btn-lg">Toggle Distortion</button>
     </p>
 
+    <!--jump to fullscreen for desktop mode-->
     <button class="btn btn-default btn-lg" id="fullscreen">FS</button>
 
+    <!--VR rendering canvas (presentation layer)-->
     <canvas id="renderCanvas"></canvas>
 
-    <canvas id="dupCanvas"></canvas>
-
+    <!--set up the VR world-->
     <script src="js/main.js"></script>
 
     <script>
 
-        // set up the Ui
-        var canvas = document.getElementById("renderCanvas");
-        var fs = document.getElementById("fullscreen");
-        var fpsLabel = document.getElementById("fpsLabel");
-        var engine = new BABYLON.Engine(canvas, true);
-        
-        var vrToggle = document.getElementById("toggleVr");
-        var distortion = document.getElementById("distortion");
-
+        // Flags for VR and barrel distortion.
         var vr = false;
         var dist = true;
 
-        var lowres = document.getElementById("lowres");
-        var highres = document.getElementById("highres");
-        var dupCanvas = document.getElementById("dupCanvas");
+        // Set up the <canvas> element.
+        var canvas = document.getElementById( "renderCanvas" );
+
+        // Set up the BabylonJS engine
+        var engine = new BABYLON.Engine( canvas, true );
         
-        // Create the scene (including cameras, objects)
-        var scene = createScene();
+        // Set up the Ui buttons.
+        var fs = document.getElementById( "fullscreen" );
+        var fpsLabel = document.getElementById( "fpsLabel" );
+        var vrToggle = document.getElementById( "toggleVr" );
+        var distortion = document.getElementById( "distortion" );
+        
+        // Create the scene (including cameras, objects).
+        var scene = createScene( engine, canvas );
 
         // Set our camera. vr toggles webvr, dist toggles barrel distortion.
-        setCamera(vr, dist);
+        setCamera( vr, dist );
 
         // Create the rendering loop.
-        engine.runRenderLoop(function () {
+        engine.runRenderLoop( function () {
 
             scene.render();            
             
             // Show framerate.
             fpsLabel.innerHTML = engine.getFps().toFixed() + " fps";   
           
-            // Animate an object
-
-                  
+            // Animate an object (not using built-in object animation).
                      
-        });
+        } );
 
         // Resize.
-        window.addEventListener("resize", function () {
+        window.addEventListener( "resize", function () {
+
             engine.resize();
-        });
+
+        } );
         
         // Go to fullscreen.
-        fs.addEventListener("click", function() {
-            if(vr==true) {
+        fs.addEventListener( "click", function() {
+
+            if( vr == true ) {
+
                 scene.activeCamera.requestVRFullscreen(false);
+
             } else {
+
                 engine.switchFullscreen(false);
+
             }
-        });
+
+        } );
         
         /*lowres.addEventListener("click", function() {
             setRatio(2);
@@ -110,18 +120,28 @@
         }); */ 
         
         // Toggle WebVR.
-        vrToggle.addEventListener("click", function() {
+        vrToggle.addEventListener( "click", function() {
+
             vr = !vr;
+
             setCamera(vr, dist);
-        });
+
+        } );
 
         // Toggle Barrel distortion.   
-        distortion.addEventListener("click", function() {
+        distortion.addEventListener( "click", function() {
+
             dist = !dist;
-            setCamera(vr, dist);
-        });         
+
+            setCamera( vr, dist );
+
+        } );
+
+        // TODO: Orientation change swap CSS to give pseudo-fullscreen
+
         
     </script>
+
 </body>
 
 </html>
