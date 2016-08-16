@@ -9,7 +9,7 @@
     <!--load BabylonJS-->
     <script src="js/babylon.max.js"></script>
 
-    <!--proceedural textures are now a library-->
+    <!--proceedural textures are seoarate library files-->
     <script src="js/babylon.marbleProceduralTexture.min.js"></script>
     <script src="js/babylon.brickProceduralTexture.min.js"></script>
     <script src="js/babylon.roadProceduralTexture.min.js"></script>
@@ -95,6 +95,24 @@
             engine.resize();
 
         } );
+
+        // Orientation change.
+        window.addEventListener( 'orientationchange', function () {
+
+            switch (window.orientation) {
+                case 0:
+                    console.log( 'onOrientationChange(): set DOM Mode:' + window.orientation );
+                    //TODO: toggle display on orientation change
+                    break;
+                case 90:
+                case -90:
+                    console.log( 'onOrientationChange(): set VR Mode, orientation:' + window.orientation );
+                    //TODO: toggle display on orientation change
+                break;
+            }
+
+        }, false );
+
         
         // Go to fullscreen.
         fs.addEventListener( "click", function() {
@@ -110,14 +128,6 @@
             }
 
         } );
-        
-        /*lowres.addEventListener("click", function() {
-            setRatio(2);
-        });
-        
-        highres.addEventListener("click", function() {
-            setRatio(0.5);
-        }); */ 
         
         // Toggle WebVR.
         vrToggle.addEventListener( "click", function() {

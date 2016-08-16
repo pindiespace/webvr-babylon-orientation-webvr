@@ -1089,6 +1089,10 @@ var domui = ( function () {
 
     ];
 
+    /* 
+     * Get the current CSS properties of a CSS element (to restore later)
+     * @param {DOMElement} elem the DOM element we want to get properties for
+     */
     function getCSSProperties ( elem ) {
 
         cssDOMProperties = []; //re-entrant
@@ -1105,18 +1109,46 @@ var domui = ( function () {
     };
 
     /** 
-     * If we can't go go fullscreen, set our CSS to mimic fullscreen
+     * If we can't go go fullscreen, set our CSS to mimic fullscreen.
+     * @param {DOMElement} elem the DOM element we want to get properties for
      */
     function mobileEnterFullscreen ( elem ) {
 
+        // save our current CSS styles
         getCSSProperties ( elem );
+
+        // apply fullscreen styles
         elem.setAttribute('style', cssProperties.join('; ') + ';');
+
+        webkitCSSPatch( canvas );
 
     };
 
-    function mobileExitFullscreen () {
+    /** 
+     * Check if our mobile is 'fullscreen-like'. If we are fullscreen on a non-mobile device, 
+     * it will also return true
+     * @param {DOMElement} elem the DOM element we want to get properties for
+     */
+    function mobileIsFullscreen ( elem ) {
 
-        elem.setAttribute('style', cssDOMProperties.join('; ') + ';');
+        if ( parseInt( getComputedStyle( elem, null ).getPropertyValue( 'width') )  >= Math.max(screen.width, screen.height ) && 
+            parseInt( getComputedStyle( elem, null ).getPropertyValue( 'width') )  >= Math.max(screen.width, screen.height) ) {
+
+            return true;
+
+        } 
+
+        return false;
+
+    };
+
+    /** 
+     * Exit pseudo-fullscreen mode on mobile
+     * @param {DOMElement} elem the DOM element we want to get properties for
+     */
+    function mobileExitFullscreen ( elem ) {
+
+        elem.setAttribute('style', cssDOMProperties.join( '; ' ) + ';');
 
     };
 
@@ -1135,15 +1167,15 @@ var domui = ( function () {
 
         var height = canvas.style.height;
 
-        canvas.style.width = (parseInt(width) + 1) + 'px';
+        canvas.style.width = ( parseInt(width) + 1 ) + 'px';
 
-        canvas.style.height = (parseInt(height)) + 'px';
+        canvas.style.height = ( parseInt( height ) ) + 'px';
 
-        console.log('Resetting width to...', width);
+        console.log( 'Resetting width to...', width );
 
         setTimeout( function() {
 
-            console.log('Done. Width is now', width);
+            console.log( 'Done. Width is now', width );
 
             canvas.style.width = width;
 
@@ -1186,7 +1218,13 @@ var domui = ( function () {
 
         isFullscreen: isFullscreen,
 
-        exitFullscreen: exitFullscreen
+        exitFullscreen: exitFullscreen,
+
+        mobileEnterFullscreen: mobileEnterFullscreen,
+
+        mobileIsFullscreen: mobileIsFullscreen,
+
+        mobileExitFullscreen: mobileExitFullscreen
 
     };
 

@@ -7,7 +7,8 @@ html, body {
     margin: 0;
     padding: 0;
 }
-        
+
+/* canvas displaying both fullscreen and VR stereo */
 #renderCanvas {
     width: 100%;
     height: 100%;
@@ -18,13 +19,15 @@ html, body {
     z-index: -1000;
 }
 
-        
+
+/* move fullscreen buttom to bottom center */  
 #fullscreen {
     position: absolute;
     bottom: 10px;
     left: 49%;
 }
-        
+ 
+/* move fps ui element to upper right */       
 #fpsLabel {
     position: absolute;
     right: 10px;
