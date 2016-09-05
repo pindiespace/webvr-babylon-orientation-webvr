@@ -9,9 +9,11 @@ html, body {
 }
 
 /* canvas displaying both fullscreen and VR stereo */
-#renderCanvas {
+#render-canvas {
     width: 100%;
     height: 100%;
+    overflow:hidden!important; /* hide webvr-polyfill default padding for iphone 5 support */
+    padding:0!important;
     touch-action: none;
     position: absolute;
     top: 0;
@@ -21,7 +23,7 @@ html, body {
 
 
 /* move fullscreen buttom to bottom center */  
-#fullscreen {
+#btn-fullscreen {
     position: absolute;
     bottom: 10px;
     left: 49%;

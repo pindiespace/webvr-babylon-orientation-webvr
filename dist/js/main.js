@@ -4,7 +4,16 @@
  * Code adapted from Raanan Weber example
  * @link https://www.sitepoint.com/using-babylon-js-build-3d-games-web/
  * 
+ * More examples on BabylonJS Playground (search "webvrfreecamera")
+ * @link http://doc.babylonjs.com/playground
+ * 
  * NOTE: this assumes the 'canvas' variable was created in index.html
+ */
+
+/** 
+ * Create a scene.
+ * @param {Object} engine an instance of the BabylonJS engine.
+ * @param {HTML5CanvasElement} canvas an HTML5 <canvas> instance.
  */
 var createScene = function ( engine, canvas ) {
 
@@ -24,12 +33,20 @@ var createScene = function ( engine, canvas ) {
     //new BABYLON.DeviceOrientationCamera("Orientation", new BABYLON.Vector3(0, 20, 0), scene);
 
     // WebVR Free Camera - http://doc.babylonjs.com/classes/2.4/WebVRFreeCamera
-    new BABYLON.WebVRFreeCamera("VR-With-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, true);
 
-    new BABYLON.WebVRFreeCamera("VR-No-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, false);
+    // Barrel distortion turned on
 
+    new BABYLON.WebVRFreeCamera( "VR-With-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, true );
 
-    // TODO: add pageup and pagedown motion
+    // Barrel distortion turned off
+
+    new BABYLON.WebVRFreeCamera( "VR-No-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, false);
+
+    // For smartphones without WebVR (native or polyfill)
+
+    new BABYLON.VRDeviceOrientationFreeCamera( "VR-Dev-Orientation", new BABYLON.Vector3( 0, 0, -10), scene );
+
+    // TODO: add pageup and pagedown controls for up/down motion on desktop
     // http://www.babylonjs-playground.com/#1EVRXC
 
     // Light the scene.
@@ -194,17 +211,64 @@ var createScene = function ( engine, canvas ) {
 };
 
 /** 
- * Assign the active camera
+ * Assign the active camera. Current versionso of BabylonJS
+ * can have only one active camera at a time.
+ * @param {Boolean} vr whether or not to use a vr-like camera (allowing 
+ * stereo view and distortion). The actual WebVR API is only used if it 
+ * is present via native or polyfill.
+ * @param {Boolean} distortion whether or not to apply barrel distortion 
+ * to the scene. If we use webvr-polyfill, it is always on.
  */
 var setCamera = function ( vr, distortion ) {
 
-    scene.activeCamera && scene.activeCamera.detachControl(canvas);
-    ///////////////var cameraId = vr ? (distortion ? "VR-With-Dist" : "VR-No-Dist") : "Orientation";
-    var cameraId = vr ? (distortion ? "VR-With-Dist" : "VR-No-Dist") : "ArcRotate";
+    var cameraId;
 
-    scene.setActiveCameraByID(cameraId);
+    scene.activeCamera && scene.activeCamera.detachControl( canvas );
 
-    scene.activeCamera.attachControl(canvas);
+
+
+    if ( navigator.getVRDisplays ) {
+
+        // Native WebVR or webvr-polyfill are present
+
+        if ( vr ) {
+
+            console.log( 'use WebVRFreeCamera' );
+
+            cameraId = distortion ? 'VR-With-Dist' : 'VR-No-Dist';
+
+        } else {
+
+            console.log( 'use ArcRotate camera' );
+
+            cameraId = 'ArcRotate';
+        }
+
+    } else {
+
+        // No webvr, use internal Babylon deviceOrientation rather than true VR
+
+        if( vr ) {
+
+            console.log( 'use VRDeviceOrientation camera');
+
+            cameraId = "VR-Dev-Orientation";
+
+        } else {
+
+            console.log( ' use ArcRotate camera' );
+
+            cameraId = 'ArcRotate';
+
+        }
+
+    }
+
+    // Set the active camera
+
+    scene.setActiveCameraByID( cameraId );
+
+    scene.activeCamera.attachControl( canvas );
 
 };
 
