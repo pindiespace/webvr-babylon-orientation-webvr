@@ -1,5 +1,36 @@
 ///<reference path="./babylon.d.ts"/>
 
+/** 
+ * detect iPhone 5, which needs a CSS patch to display properly.
+ * @returns {Boolean} if iPhone 5, return true, else false.
+ */
+function isIPhone5 () {
+
+    if ( navigator.userAgent.match( /iPhone/i ) ) {
+
+        if( window.screen.height == ( 1136 / 2 ) ) { // specific to iphone 5
+
+           return true;
+
+        }
+
+    }
+
+    return false;
+
+};
+
+
+/** 
+ * check if WebVR 1.0 API is present (native or polyfill)
+ * @returns {Boolean} if present, return true, else false
+ */
+function hasWebVRAPI () {
+
+    return ( navigator.getVRDisplays ? true : false );
+
+};
+
 /* 
  * Code adapted from Raanan Weber example
  * @link https://www.sitepoint.com/using-babylon-js-build-3d-games-web/
@@ -9,6 +40,162 @@
  * 
  * NOTE: this assumes the 'canvas' variable was created in index.html
  */
+var vrCameras = (function () {
+
+    var defaultCamera = vrOrientationCamera = vrDistCamera = vrNoDistCamera = cameraId = null;
+
+    function initDefaultCamera ( scene ) {
+
+        // FPS camera for non-VR experiences
+
+        defaultCamera = new BABYLON.ArcRotateCamera( "ArcRotate", -1.5, 1.4, 20, new BABYLON.Vector3( 0, -2, 3 ), scene );
+
+    };
+
+    function initOrientationCameras ( scene ) {
+
+        // For smartphones without WebVR (native or polyfill)
+
+        vrOrientationCamera = new BABYLON.VRDeviceOrientationFreeCamera( "VR-Dev-Orientation", new BABYLON.Vector3( 0, 0, -10), scene );
+
+    };
+
+    function initVRCameras ( scene ) {
+
+        // Barrel distortion turned on
+
+        vrDistCamera = new BABYLON.WebVRFreeCamera( "VR-With-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, true );
+
+        // Barrel distortion turned off
+
+        vrNoDistCamera = new BABYLON.WebVRFreeCamera( "VR-No-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, false);
+
+    };
+
+    function initCameras ( scene ) {
+
+        if( ! defaultCamera ) {
+
+            console.log( 'initializing default camera' );
+
+            initDefaultCamera( scene );
+
+        }
+
+        if ( ! vrOrientationCamera ) {
+
+            console.log( 'initializing VRDeviceOrientationFreeCamera' );
+
+            initOrientationCameras( scene );
+
+        }
+
+        console.log("has WebVR API:" + String(hasWebVRAPI()));
+
+        console.log("vrdistCamera:" + typeof vrDistCamera );
+
+        if ( hasWebVRAPI() === true && ! vrDistCamera ) {
+
+            console.log( 'xxxxxxxxxxxxinitializing WebVRFreeCamera' );
+
+            initVRCameras( scene );
+
+        }
+
+    };
+
+
+    /** 
+     * Assign the active camera. Current versionso of BabylonJS
+     * can have only one active camera at a time.
+     * @param {Boolean} vr whether or not to use a vr-like camera (allowing 
+     * stereo view and distortion). The actual WebVR API is only used if it 
+     * is present via native or polyfill.
+     * @param {Boolean} distortion whether or not to apply barrel distortion 
+     * to the scene. If we use webvr-polyfill, it is always on.
+     */
+    var setCamera = function ( scene, vr, distortion, canvas ) {
+
+        // initialize cameras if they haven't been
+
+        initCameras( scene );
+
+        scene.activeCamera && scene.activeCamera.detachControl( canvas );
+
+        if ( navigator.getVRDisplays ) {
+
+            // Native WebVR or webvr-polyfill are present
+
+            if ( vr ) {
+
+                console.log( 'use WebVRFreeCamera' );
+
+                cameraId = distortion ? 'VR-With-Dist' : 'VR-No-Dist';
+
+            } else {
+
+                console.log( 'use ArcRotate camera' );
+
+                cameraId = 'ArcRotate';
+
+            }
+
+        } else {
+
+            // No webvr, use internal Babylon deviceOrientation rather than true VR
+
+            if( vr ) {
+
+                console.log( 'use VRDeviceOrientation camera');
+
+                cameraId = "VR-Dev-Orientation";
+
+            } else {
+
+                console.log( 'use ArcRotate camera' );
+
+                cameraId = 'ArcRotate';
+
+            }
+
+        }
+
+        console.log( 'setting active camera to:' + cameraId );
+
+        // Set the active camera
+
+        scene.setActiveCameraByID( cameraId );
+
+        scene.activeCamera.attachControl( canvas );
+
+    };
+
+    /** 
+     * Set scaling low res vs. high-res
+     * @param {Object} engine the BabylonJS engine
+     * @param {Number} factor number controlling resolution
+     */
+    function setRatio ( engine, factor ) {
+
+        engine._hardwareScalingLevel *= factor;
+
+        engine._hardwareScalingLevel = Math.max(engine._hardwareScalingLevel, 1 / window.devicePixelRatio);
+
+        engine.resize();
+
+    };
+
+    return {
+
+        initCameras: initCameras,
+        setCamera: setCamera, 
+        setRatio: setRatio
+
+    };
+
+
+} )();
+
 
 /** 
  * Create a scene.
@@ -26,7 +213,7 @@ var createScene = function ( engine, canvas ) {
     //new BABYLON.VRDeviceOrientationFreeCamera("VR-No-Dist", new BABYLON.Vector3(0, 0, 0), scene, false);
 
     // FPS camera for non-VR experiences
-    new BABYLON.ArcRotateCamera( "ArcRotate", -1.5, 1.4, 20, new BABYLON.Vector3( 0, -2, 3 ), scene );
+    //new BABYLON.ArcRotateCamera( "ArcRotate", -1.5, 1.4, 20, new BABYLON.Vector3( 0, -2, 3 ), scene );
 
     // Use the Device Orientation Camera - http://doc.babylonjs.com/classes/2.4/DeviceOrientationCamera
     // NOTE: we alter the position of the camera here to match the WebVR cameras, so approx the same scene is shown
@@ -36,15 +223,15 @@ var createScene = function ( engine, canvas ) {
 
     // Barrel distortion turned on
 
-    new BABYLON.WebVRFreeCamera( "VR-With-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, true );
+    //new BABYLON.WebVRFreeCamera( "VR-With-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, true );
 
     // Barrel distortion turned off
 
-    new BABYLON.WebVRFreeCamera( "VR-No-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, false);
+    //new BABYLON.WebVRFreeCamera( "VR-No-Dist", new BABYLON.Vector3( 0, 0, -10 ), scene, false);
 
     // For smartphones without WebVR (native or polyfill)
 
-    new BABYLON.VRDeviceOrientationFreeCamera( "VR-Dev-Orientation", new BABYLON.Vector3( 0, 0, -10), scene );
+    //new BABYLON.VRDeviceOrientationFreeCamera( "VR-Dev-Orientation", new BABYLON.Vector3( 0, 0, -10), scene );
 
     // TODO: add pageup and pagedown controls for up/down motion on desktop
     // http://www.babylonjs-playground.com/#1EVRXC
@@ -209,80 +396,3 @@ var createScene = function ( engine, canvas ) {
 
     return scene;
 };
-
-/** 
- * Assign the active camera. Current versionso of BabylonJS
- * can have only one active camera at a time.
- * @param {Boolean} vr whether or not to use a vr-like camera (allowing 
- * stereo view and distortion). The actual WebVR API is only used if it 
- * is present via native or polyfill.
- * @param {Boolean} distortion whether or not to apply barrel distortion 
- * to the scene. If we use webvr-polyfill, it is always on.
- */
-var setCamera = function ( vr, distortion ) {
-
-    var cameraId;
-
-    scene.activeCamera && scene.activeCamera.detachControl( canvas );
-
-
-
-    if ( navigator.getVRDisplays ) {
-
-        // Native WebVR or webvr-polyfill are present
-
-        if ( vr ) {
-
-            console.log( 'use WebVRFreeCamera' );
-
-            cameraId = distortion ? 'VR-With-Dist' : 'VR-No-Dist';
-
-        } else {
-
-            console.log( 'use ArcRotate camera' );
-
-            cameraId = 'ArcRotate';
-        }
-
-    } else {
-
-        // No webvr, use internal Babylon deviceOrientation rather than true VR
-
-        if( vr ) {
-
-            console.log( 'use VRDeviceOrientation camera');
-
-            cameraId = "VR-Dev-Orientation";
-
-        } else {
-
-            console.log( ' use ArcRotate camera' );
-
-            cameraId = 'ArcRotate';
-
-        }
-
-    }
-
-    // Set the active camera
-
-    scene.setActiveCameraByID( cameraId );
-
-    scene.activeCamera.attachControl( canvas );
-
-};
-
-/** 
- * Set scaling low res vs. high-res
- */
-var setRatio = function ( factor ) {
-
-    engine._hardwareScalingLevel *= factor;
-
-    engine._hardwareScalingLevel = Math.max(engine._hardwareScalingLevel, 1 / window.devicePixelRatio);
-
-    engine.resize();
-
-};
-
-

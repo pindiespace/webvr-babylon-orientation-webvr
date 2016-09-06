@@ -13,7 +13,7 @@
     <!--local styles allowing fullscreen-->
     <link rel="stylesheet" href="css/styles.css">
 
-    <title>Babylon.js sample code</title>
+    <title>Babylon.js Cameras sample code</title>
 
     <!--load webvr-polyfill. Adjust the values in webvr-polyfill-config.js 
     if you want to test the polyfill against BabylonJS. Otherwise, the 
@@ -48,11 +48,14 @@
 
     <!--toggle the WebVR API-->
     <p>
+        <!--start webvr-polyfill -->
+        <button type="button" id="btn-toggle-polyfill" class="btn btn-default btn-lg">Start WebVR-Polyfill</button>
+
         <!--turn webvr on and off-->
         <button type="button" id="btn-toggle-vr" class="btn btn-default btn-lg">Toggle WebVR</button>
 
         <!--turn on distortion (also goes to fullscreen)-->
-        <button type="button" id="btn-toggle-distortion" class="btn btn-default btn-lg">Toggle Distortion</button>
+        <button type="button" id="btn-toggle-distortion" class="btn btn-default btn-lg" disabled>Toggle Distortion</button>
     </p>
 
     <!--jump to fullscreen for desktop mode (no vr)-->
@@ -65,26 +68,6 @@
     <script src="js/main.js"></script>
 
 <script>
-
-    /** 
-     * detect iPhone 5, which needs a CSS patch to display properly.
-     * @returns {Boolean} if iPhone 5, return true, else false.
-     */
-    function isIPhone5 () {
-
-        if ( navigator.userAgent.match( /iPhone/i ) ) {
-
-            if( window.screen.height == ( 1136 / 2 ) ) { // specific to iphone 5
-
-                return true;
-
-            }
-
-        }
-
-        return false;
-
-    };
 
         // Flags for VR and barrel distortion.
 
@@ -116,13 +99,19 @@
 
         // Set hardware ratio to 1 (max resolution)
 
-        setRatio( 1 );
+        vrCameras.setRatio( engine, 1 );
 
         // Set up the Ui buttons.
 
         var fs = document.getElementById( "btn-fullscreen" );
 
+        var togglePolyfill = document.getElementById( "btn-toggle-polyfill" );
+
         var toggleVR = document.getElementById( "btn-toggle-vr" );
+
+        // If native VR not present, set to vrDeviceOrientation
+
+        toggleVR.innerHTML = "Toggle VRDeviceOrientation Camera";
 
         var toggleDistortion = document.getElementById( "btn-toggle-distortion" );
 
@@ -136,7 +125,7 @@
 
         // Set our camera. vr toggles webvr, dist toggles barrel distortion.
 
-        setCamera( vr, dist );
+        vrCameras.setCamera( scene, vr, dist, canvas );
 
         // Create the rendering loop.
 
@@ -164,7 +153,7 @@
 
         window.addEventListener( 'orientationchange', function () {
 
-            console.log("IN ORIENTATION CHANGE");
+            console.log("processing an orientation change...");
 
             switch (window.orientation) {
 
@@ -186,6 +175,7 @@
                     canvas.style.padding = '0';
                     //TODO: toggle display on orientation change
                 break;
+
             }
 
         }, false );
@@ -197,7 +187,10 @@
 
             if( vr == true ) {
 
-                scene.activeCamera.requestVRFullscreen(false);
+                engine.switchFullscreen(true);
+
+                vrCameras.setCamera( scene, vr, dist, canvas );
+
 
             } else {
 
@@ -207,9 +200,58 @@
 
         } );
 
+
+        // keep track of if you're using the polyfill
+
+        var useWebVRPolyfill = false;
+
+        // Start webvr-polyfill (can't be turned off) and hide button
+
+        togglePolyfill.addEventListener( "click", function () {
+
+            console.log( "testing for native before starting polyfill...");
+
+            if ( useWebVRPolyfill ) {
+
+                console.log( 'webvr-polyfill already loaded!' );
+
+                return;
+
+            } else {
+
+                if ( hasWebVRAPI() ) {
+
+                    console.log( 'native WebVR present, do not start polyfill' );
+
+                    return;
+                }
+            }
+
+            console.log( "starting webvr-polyfill...");
+
+            if( InitializeWebVRPolyfill ) {
+
+                useWebVRPolyfill = true;
+
+                InitializeWebVRPolyfill();
+
+                toggleVR.innerHTML = "Toggle WebVR";
+
+                this.className = 'hidden';
+
+                toggleDistortion.innerHTML = 'Toggle Polyfill Distortion';
+
+            } else {
+
+                console.log( 'WebVRPolyfill initialize not present (check webvr-polyfill-config.js' );
+            }
+
+        } );
+
+
         // Toggle WebVR.
 
-        toggleVR.addEventListener( "click", function() {
+        toggleVR.addEventListener( "click", function () {
 
             vr = !vr;
 
@@ -221,17 +263,23 @@
 
                 canvas.style.height = '100%';
 
+                // toggle ability to distort
+
+                toggleDistortion.disabled = false;
+
             } else {
 
                 canvas.style.width = oldWidth + 'px';
 
                 canvas.style.height = oldHeight + 'px';
 
+                toggleDistortion.disabled = true;
+
             }
 
             engine.resize();
 
-            setCamera(vr, dist);
+            vrCameras.setCamera( scene, vr, dist, canvas );
 
         } );
 
@@ -241,7 +289,15 @@
 
             dist = !dist;
 
-            setCamera( vr, dist );
+            if ( useWebVRPolyfill ) {
+
+                this.innerHTML = 'only works once if polyfill';
+
+                //this.disabled = true;
+
+            }
+
+            vrCameras.setCamera( scene, vr, dist, canvas );
 
         } );
 

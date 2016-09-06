@@ -8,6 +8,8 @@ html, body {
     padding: 0;
 }
 
+/* ------------------------ rendering canvas --------------------------------*/
+
 /* canvas displaying both fullscreen and VR stereo */
 #render-canvas {
     width: 100%;
@@ -21,6 +23,18 @@ html, body {
     z-index: -1000;
 }
 
+/* ------------------------ buttons --------------------------------*/
+
+/* override button border */
+button {
+    border:0!important;
+}
+
+/* highlight button on hover */
+button:hover {
+    box-shadow: inset 0 0 0 5px #3071A9;
+}
+
 
 /* move fullscreen buttom to bottom center */  
 #btn-fullscreen {
@@ -28,7 +42,9 @@ html, body {
     bottom: 10px;
     left: 49%;
 }
- 
+
+/* ------------------------ fps hud --------------------------------*/
+
 /* move fps ui element to upper right */       
 #fpsLabel {
     position: absolute;
